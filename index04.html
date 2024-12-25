@@ -4,8 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据看板 - 我的知识库</title>
-    <!-- 引入 ECharts -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    
+    <!-- 添加混合加载方案 -->
+    <script>
+        function loadECharts() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = './js/echarts.min.js';
+                script.onload = resolve;
+                script.onerror = function() {
+                    console.warn('本地ECharts加载失败，切换到CDN...');
+                    const cdnScript = document.createElement('script');
+                    cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js';
+                    cdnScript.onload = resolve;
+                    cdnScript.onerror = function() {
+                        console.error('CDN加载也失败，尝试备用CDN...');
+                        const backupScript = document.createElement('script');
+                        backupScript.src = 'https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js';
+                        backupScript.onload = resolve;
+                        backupScript.onerror = reject;
+                        document.head.appendChild(backupScript);
+                    };
+                    document.head.appendChild(cdnScript);
+                };
+                document.head.appendChild(script);
+            });
+        }
+    </script>
     
     <style>
         * {
@@ -87,24 +112,6 @@
             width: 70%;
         }
 
-        .site-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .site-title a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .home-link {
-            padding: 0.5rem 1rem;
-            background-color: #34495e;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
         .dashboard-container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -129,6 +136,7 @@
         .chart-container {
             width: 100%;
             height: 300px;
+            position: relative;
         }
 
         .large .chart-container {
@@ -153,6 +161,38 @@
             color: #3498db;
             cursor: pointer;
             font-size: 1rem;
+        }
+
+        /* 加载状态和错误提示样式 */
+        .loading-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .chart-error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            margin: 10px;
         }
 
         @media (max-width: 1200px) {
@@ -214,6 +254,7 @@
             </div>
             <div id="categoryChart" class="chart-container"></div>
         </div>
+
         <!-- 热门文章排行 -->
         <div class="data-card large">
             <div class="data-header">
@@ -261,315 +302,433 @@
     </div>
 
     <script>
-        // 初始化所有图表
+        // 图表实例管理
+        const chartInstances = new Map();
+
+        // 等待ECharts加载
+        function waitForECharts(callback, retries = 10) {
+            if (typeof echarts !== 'undefined') {
+                callback();
+                return;
+            }
+            
+            if (retries > 0) {
+                console.log('等待ECharts加载...剩余重试次数:', retries);
+                setTimeout(() => waitForECharts(callback, retries - 1), 500);
+            } else {
+                console.error('ECharts加载失败！');
+                showAllChartsError('图表加载失败，请刷新页面重试');
+            }
+        }
+
+        // 显示加载状态
+        function showLoading(container) {
+            const loading = document.createElement('div');
+            loading.className = 'loading-container';
+            loading.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div style="margin-top: 10px;">加载中...</div>
+            `;
+            container.appendChild(loading);
+        }
+
+        // 隐藏加载状态
+        function hideLoading(container) {
+            const loading = container.querySelector('.loading-container');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        // 显示错误信息
+        function showError(container, message) {
+            const error = document.createElement('div');
+            error.className = 'chart-error';
+            error.textContent = message;
+            container.appendChild(error);
+        }
+
+        // 显示所有图表的错误信息
+        function showAllChartsError(message) {
+            document.querySelectorAll('.chart-container').forEach(container => {
+                showError(container, message);
+            });
+        }
+
+        // 初始化单个图表
+        function initChart(containerId, options) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+
+            showLoading(container);
+
+            try {
+                const chart = echarts.init(container);
+                chartInstances.set(containerId, chart);
+                chart.setOption(options);
+                hideLoading(container);
+                return chart;
+            } catch (error) {
+                console.error(`初始化图表 ${containerId} 失败:`, error);
+                hideLoading(container);
+                showError(container, '图表初始化失败，请刷新重试');
+                return null;
+            }
+        }
+
+        // 初始化��有图表
         function initCharts() {
-            // 访问量趋势图
-            const visitChart = echarts.init(document.getElementById('visitChart'));
-            visitChart.setOption({
-                tooltip: {
-                    trigger: 'axis'
-                },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true
-                },
-                xAxis: {
-                    type: 'category',
-                    boundaryGap: false,
-                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                yAxis: {
-                    type: 'value',
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                series: [{
-                    name: '访问量',
-                    type: 'line',
-                    smooth: true,
-                    data: [820, 932, 901, 934, 1290, 1330, 1320],
-                    areaStyle: {
-                        opacity: 0.3
-                    },
-                    itemStyle: {
-                        color: '#3498db'
-                    }
-                }]
-            });
+            if (typeof echarts === 'undefined') {
+                showAllChartsError('ECharts库加载失败');
+                return;
+            }
 
-            // 用户地域分布图（简化版中国地图）
-            const userMapChart = echarts.init(document.getElementById('userMapChart'));
-            userMapChart.setOption({
-                tooltip: {
-                    trigger: 'item'
-                },
-                series: [{
-                    type: 'pie',
-                    radius: ['30%', '50%'],
-                    data: [
-                        { value: 335, name: '华东' },
-                        { value: 310, name: '华北' },
-                        { value: 234, name: '华南' },
-                        { value: 135, name: '西部' },
-                        { value: 148, name: '其他' }
-                    ],
-                    emphasis: {
+            try {
+                // 访问量趋势图
+                initChart('visitChart', {
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    series: [{
+                        name: '访问量',
+                        type: 'line',
+                        smooth: true,
+                        data: [820, 932, 901, 934, 1290, 1330, 1320],
+                        areaStyle: {
+                            opacity: 0.3
+                        },
                         itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            color: '#3498db'
                         }
-                    }
-                }]
-            });
+                    }]
+                });
 
-            // 文章分类占比
-            const categoryChart = echarts.init(document.getElementById('categoryChart'));
-            categoryChart.setOption({
-                tooltip: {
-                    trigger: 'item'
-                },
-                legend: {
-                    orient: 'vertical',
-                    right: 90,
-                    top: 'center',
-                    textStyle: {
-                        color: '#ecf0f1'
-                    }
-                },
-                series: [{
-                    name: '文章分类',
-                    type: 'pie',
-                    radius: ['60%', '80%'],
-                    avoidLabelOverlap: false,
-                    itemStyle: {
-                        borderRadius: 10,
-                        borderColor: '#fff',
-                        borderWidth: 2
+                // 用户地域分布
+                initChart('userMapChart', {
+                    tooltip: {
+                        trigger: 'item'
                     },
-                    label: {
-                        show: false,
-                        position: 'center'
+                    series: [{
+                        type: 'pie',
+                        radius: ['30%', '50%'],
+                        data: [
+                            { value: 335, name: '华东' },
+                            { value: 310, name: '华北' },
+                            { value: 234, name: '华南' },
+                            { value: 135, name: '西部' },
+                            { value: 148, name: '其他' }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                });
+
+                // 文章分类占比
+                initChart('categoryChart', {
+                    tooltip: {
+                        trigger: 'item'
                     },
-                    emphasis: {
+                    legend: {
+                        orient: 'vertical',
+                        right: 90,
+                        top: 'center',
+                        textStyle: {
+                            color: '#ecf0f1'
+                        }
+                    },
+                    series: [{
+                        name: '文章分类',
+                        type: 'pie',
+                        radius: ['60%', '80%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '20',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        data: [
+                            { value: 1048, name: '前端开发' },
+                            { value: 735, name: '后端开发' },
+                            { value: 580, name: '数据库' },
+                            { value: 484, name: 'DevOps' },
+                            { value: 300, name: '系统架构' }
+                        ]
+                    }]
+                });
+
+                // 热门文章排行
+                initChart('articleRankChart', {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: ['文章1', '文章2', '文章3', '文章4', '文章5'],
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    series: [{
+                        name: '访问量',
+                        type: 'bar',
+                        data: [2999, 2500, 2000, 1800, 1500],
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#83bff6' },
+                                { offset: 0.5, color: '#188df0' },
+                                { offset: 1, color: '#188df0' }
+                            ])
+                        }
+                    }]
+                });
+
+                // 用户增长趋势
+                initChart('userGrowthChart', {
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: { color: '#ecf0f1' }
+                    },
+                    series: [{
+                        data: [150, 230, 224, 218, 135, 147],
+                        type: 'line',
+                        smooth: true,
+                        areaStyle: {
+                            opacity: 0.3
+                        },
+                        itemStyle: {
+                            color: '#27ae60'
+                        }
+                    }]
+                });
+
+                // 互动数据分析
+                initChart('interactionChart', {
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    radar: {
+                        indicator: [
+                            { name: '评论', max: 100 },
+                            { name: '点赞', max: 100 },
+                            { name: '分享', max: 100 },
+                            { name: '收藏', max: 100 },
+                            { name: '转发', max: 100 }
+                        ],
+                        axisName: {
+                            color: '#ecf0f1'
+                        }
+                    },
+                    series: [{
+                        type: 'radar',
+                        data: [{
+                            value: [85, 90, 70, 95, 60],
+                            name: '互动指标'
+                        }],
+                        itemStyle: {
+                            color: '#9b59b6'
+                        }
+                    }]
+                });
+
+                // 设备访问占比
+                initChart('deviceChart', {
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    legend: {
+                        bottom: '2%',
+                        left: 'center',
+                        textStyle: {
+                            color: '#ecf0f1'
+                        }
+                    },
+                    series: [{
+                        name: '访问设备',
+                        type: 'pie',
+                        radius: ['35%', '50%'],
+                        center: ['50%', '40%'],
                         label: {
                             show: true,
-                            fontSize: '20',
-                            fontWeight: 'bold'
+                            position: 'outside',
+                            formatter: '{b}',
+                            fontSize: 12,
+                            color: '#ecf0f1',
+                            distanceToLabelLine: 5
+                        },
+                        labelLine: {
+                            show: true,
+                            length: 10,
+                            length2: 10,
+                            smooth: true
+                        },
+                        data: [
+                            { value: 1048, name: '移动端' },
+                            { value: 735, name: 'PC端' },
+                            { value: 580, name: '平板' },
+                            { value: 484, name: '其他' }
+                        ],
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }
+                    }]
+                });
+
+                // 访问时段分布
+                initChart('timeChart', {
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                        axisLabel: {
+                            color: '#ecf0f1',
+                            rotate: 45
                         }
                     },
-                    data: [
-                        { value: 1048, name: '前端开发' },
-                        { value: 735, name: '后端开发' },
-                        { value: 580, name: '数据库' },
-                        { value: 484, name: 'DevOps' },
-                        { value: 300, name: '系统架构' }
-                    ]
-                }]
-            });
-
-            // 热门文章排行
-            const articleRankChart = echarts.init(document.getElementById('articleRankChart'));
-            articleRankChart.setOption({
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        type: 'shadow'
-                    }
-                },
-                grid: {
-                    left: '3%',
-                    right: '4%',
-                    bottom: '3%',
-                    containLabel: true
-                },
-                xAxis: {
-                    type: 'value',
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                yAxis: {
-                    type: 'category',
-                    data: ['文章1', '文章2', '文章3', '文章4', '文章5'],
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                series: [{
-                    name: '访问量',
-                    type: 'bar',
-                    data: [2999, 2500, 2000, 1800, 1500],
-                    itemStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                            { offset: 0, color: '#83bff6' },
-                            { offset: 0.5, color: '#188df0' },
-                            { offset: 1, color: '#188df0' }
-                        ])
-                    }
-                }]
-            });
-
-            // 用户增长趋势
-            const userGrowthChart = echarts.init(document.getElementById('userGrowthChart'));
-            userGrowthChart.setOption({
-                tooltip: {
-                    trigger: 'axis'
-                },
-                xAxis: {
-                    type: 'category',
-                    data: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                yAxis: {
-                    type: 'value',
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                series: [{
-                    data: [150, 230, 224, 218, 135, 147],
-                    type: 'line',
-                    smooth: true,
-                    areaStyle: {
-                        opacity: 0.3
+                    yAxis: {
+                        type: 'value',
+                        axisLabel: { color: '#ecf0f1' }
                     },
-                    itemStyle: {
-                        color: '#27ae60'
-                    }
-                }]
-            });
+                    series: [{
+                        data: [120, 50, 30, 180, 230, 290, 340, 200],
+                        type: 'bar',
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#e74c3c' },
+                                { offset: 1, color: '#c0392b' }
+                            ])
+                        }
+                    }]
+                });
 
-            // 互动数据分析
-            const interactionChart = echarts.init(document.getElementById('interactionChart'));
-            interactionChart.setOption({
-                tooltip: {
-                    trigger: 'item'
-                },
-                radar: {
-                    indicator: [
-                        { name: '评论', max: 100 },
-                        { name: '点赞', max: 100 },
-                        { name: '分享', max: 100 },
-                        { name: '收藏', max: 100 },
-                        { name: '转发', max: 100 }
-                    ],
-                    axisName: {
-                        color: '#ecf0f1'
-                    }
-                },
-                series: [{
-                    type: 'radar',
-                    data: [{
-                        value: [85, 90, 70, 95, 60],
-                        name: '互动指标'
-                    }],
-                    itemStyle: {
-                        color: '#9b59b6'
-                    }
-                }]
-            });
+            } catch (error) {
+                console.error('图表初始化失败：', error);
+                showAllChartsError('图表初始化失败');
+            }
+        }
 
-            // 设备访问占比
-            const deviceChart = echarts.init(document.getElementById('deviceChart'));
-            deviceChart.setOption({
-                tooltip: {
-                    trigger: 'item'
-                },
-                legend: {
-                    bottom: '2%',
-                    left: 'center',
-                    textStyle: {
-                        color: '#ecf0f1',
-                    }
-                },
-                series: [{
-                    name: '访问设备',
-                    type: 'pie',
-                    radius: ['35%', '50%'],
-                    center: ['50%', '40%'],
-                    label: {  // [新增配置] 添加标签显示
-                        show: true,        // 显示标签
-                        position: 'outside', // 标签位置在外侧
-                        formatter: '{b}',   // 显示名称
-                        fontSize: 12,       // 文字大小
-                        color: '#ecf0f1',   // 文字颜色
-                        distanceToLabelLine: 5  // 文字与引导线之间的距离
-                    },
-                    labelLine: {  // [新增配置] 引导线配置
-                        show: true,
-                        length: 10,    // 第一段引导线长度
-                        length2: 10,   // 第二段引导线长度
-                        smooth: true   // 平滑的引导线
-                    },
-                    data: [
-                        { value: 1048, name: '移动端' },
-                        { value: 735, name: 'PC端' },
-                        { value: 580, name: '平板' },
-                        { value: 484, name: '其他' }
-                    ],
-                    itemStyle: {
-                        borderRadius: 10,
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }
-                }]
-            });
-
-            // 访问时段分布
-            const timeChart = echarts.init(document.getElementById('timeChart'));
-            timeChart.setOption({
-                tooltip: {
-                    trigger: 'axis'
-                },
-                xAxis: {
-                    type: 'category',
-                    data: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
-                    axisLabel: { 
-                        color: '#ecf0f1',
-                        rotate: 45
-                    }
-                },
-                yAxis: {
-                    type: 'value',
-                    axisLabel: { color: '#ecf0f1' }
-                },
-                series: [{
-                    data: [120, 50, 30, 180, 230, 290, 340, 200],
-                    type: 'bar',
-                    itemStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            { offset: 0, color: '#e74c3c' },
-                            { offset: 1, color: '#c0392b' }
-                        ])
-                    }
-                }]
-            });
-        }     // 其他图表初始化代码...
-            // 为了保持响应简洁，这里省略了其他图表的具体实现
-            // 实际使用时需要为每个图表容器初始化相应的图表
-
-            // 页面加载完成后初始化图表
-        document.addEventListener('DOMContentLoaded', initCharts);
-
-        // 窗口大小改变时重绘图表
+        // 处理窗口大小改变
+        let resizeTimer = null;
         window.addEventListener('resize', function() {
-            const charts = document.querySelectorAll('.chart-container');
-            charts.forEach(container => {
-                const chart = echarts.getInstanceByDom(container);
+            if (resizeTimer) {
+                clearTimeout(resizeTimer);
+            }
+            
+            resizeTimer = setTimeout(() => {
+                chartInstances.forEach(chart => {
+                    try {
+                        chart.resize();
+                    } catch (error) {
+                        console.error('图表重绘失败：', error);
+                    }
+                });
+            }, 100);
+        });
+
+        // 刷新按钮事件处理
+        document.querySelectorAll('.refresh-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const chartContainer = this.closest('.data-card').querySelector('.chart-container');
+                const chart = echarts.getInstanceByDom(chartContainer);
+                
                 if (chart) {
-                    chart.resize();
+                    try {
+                        this.style.transform = 'rotate(360deg)';
+                        this.style.transition = 'transform 0.5s';
+                        
+                        showLoading(chartContainer);
+                        
+                        // 模拟数据刷新
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        const newData = Array.from(
+                            {length: chart.getOption().series[0].data.length}, 
+                            () => Math.floor(Math.random() * 1000)
+                        );
+                        
+                        chart.setOption({
+                            series: [{
+                                data: newData
+                            }]
+                        });
+                        
+                        hideLoading(chartContainer);
+                    } catch (error) {
+                        console.error('数据刷新失败：', error);
+                        showError(chartContainer, '数据刷新失败，请重试');
+                    } finally {
+                        this.style.transform = 'none';
+                        this.style.transition = 'none';
+                    }
                 }
             });
         });
 
-        // 为刷新按钮添加点击事件
-        document.querySelectorAll('.refresh-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 这里可以添加刷新数据的逻辑
-                this.style.transform = 'rotate(360deg)';
-                this.style.transition = 'transform 0.5s';
-                setTimeout(() => {
-                    this.style.transform = 'none';
-                    this.style.transition = 'none';
-                }, 500);
-            });
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', function() {
+            loadECharts()
+                .then(() => {
+                    console.log('ECharts加载成功');
+                    waitForECharts(initCharts);
+                })
+                .catch(error => {
+                    console.error('ECharts加载失败：', error);
+                    showAllChartsError('图表库加载失败，请检查网络连接后刷新页面');
+                });
         });
     </script>
 </body>
