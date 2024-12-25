@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扩展板块 - 知识库</title>
+    <!-- 添加必要的 JavaScript 库 -->
+    <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/dist/vis-network.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/jsmind@0.5.5/style/jsmind.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jsmind@0.5.5/js/jsmind.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #0d47a1;
+            background: rgba(13, 71, 161, 0.1);
+        }
+
+        /* 主要内容区布局 */
+        .mindmap-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 3fr 7fr;
+            gap: 2rem;
+        }
+
+        /* 左侧灵感便签区域 */
+        .notes-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: calc(100vh - 200px);
+            position: sticky;
+            top: 80px;
+            overflow-y: auto;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .add-note-btn {
+            background: #0d47a1;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-note-btn:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .note-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #0d47a1;
+            transition: all 0.3s ease;
+        }
+
+        .note-card:hover {
+            transform: translateX(5px);
+            background: #e3f2fd;
+        }
+
+        .note-content {
+            min-height: 60px;
+            height: auto;
+            margin-bottom: 1rem;
+            outline: none;
+            overflow-y: hidden;
+            resize: none;
+            transition: height 0.3s ease;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .delete-note {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-note:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        /* 右侧思维导图区域 */
+        .mindmap-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mindmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mindmap-header h1 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            position: relative;
+        }
+
+        .mindmap-header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: #0d47a1;
+            border-radius: 2px;
+        }
+
+        .mindmap-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .mindmap-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #0d47a1;
+            border-radius: 20px;
+            background: white;
+            color: #0d47a1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mindmap-btn:hover {
+            background: #0d47a1;
+            color: white;
+        }
+
+        .create-map-btn {
+            background: #0d47a1;
+            color: white;
+        }
+
+        .create-map-btn:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+
+        .mindmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .mindmap-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #eee;
+        }
+
+        .mindmap-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .mindmap-preview {
+            height: 300px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #mindmap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .mindmap-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mindmap-title {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .mindmap-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 导出模态框样式 */
+        .export-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.2);
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .export-modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .export-modal.active .export-modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+            margin: 1.8rem 0;
+        }
+
+        .export-option {
+            padding: 1.5rem;
+            border: 2px solid #eee;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .export-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(13, 71, 161, 0.04);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .export-option:hover {
+            border-color: #0d47a1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.1);
+        }
+
+        .export-option:hover::before {
+            opacity: 1;
+        }
+
+        .export-option.selected {
+            border-color: #0d47a1;
+            background: rgba(13, 71, 161, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .export-option img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .export-option:hover img {
+            transform: scale(1.1);
+        }
+
+        .export-option h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .export-option p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .modal-btn {
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 0.95rem;
+        }
+
+        .cancel-btn {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        .cancel-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .export-btn {
+            background: #0d47a1;
+            border: 1px solid #0d47a1;
+            color: white;
+        }
+
+        .export-btn:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+        }
+
+        /* 添加导出模态框显示/隐藏动画 */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modalFadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        /* 头部区域样式 */
+        .page-header {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
+            padding: 2.6rem 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 205px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 2.6rem;
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
+            font-size: 2rem;
+            margin-bottom: 0.6rem;
+            font-weight: 800;
+        }
+
+        .header-description {
+            font-size: 1rem;
+            margin-bottom: 1.3rem;
+            opacity: 0.9;
+        }
+
+        .header-features {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .header-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-image img {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+        }
+
+        /* 波浪动画 */
+        .wave-3, .wave-4 {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 80px;
+            background-repeat: repeat-x;
+            animation: wave 20s linear infinite;
+        }
+
+        .wave-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.2' d='M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,112C960,117,1056,107,1152,101.3C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .wave-4 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.15' d='M0,32L48,37.3C96,43,192,53,288,80C384,107,480,149,576,160C672,171,768,149,864,128C960,107,1056,85,1152,80C1248,75,1344,85,1392,90.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            opacity: 0.2;
+            z-index: 1;
+            animation-delay: -5s;
+        }
+
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1440px; }
+        }
+
+        /* 修改灵感便签样式，使其自适应内容高度 */
+        .note-content {
+            min-height: 60px;
+            height: auto;
+            margin-bottom: 1rem;
+            outline: none;
+            overflow-y: hidden;
+            resize: none;
+            transition: height 0.3s ease;
+        }
+
+        .note-card {
+            min-height: 100px;
+            height: auto;
+            transition: all 0.3s ease;
+        }
+
+        /* 思维导图预览样式 */
+        .mindmap-preview {
+            height: 300px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #mindmap {
+            width: 100%;
+            height: 100%;
+        }
+
+        .mindmap-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 2;
+        }
+
+        .mindmap-control-btn {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mindmap-control-btn:hover {
+            background: #f5f5f5;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="index01.html">技术笔记</a>
+                <a href="index02.html">学习心得</a>
+                <a href="index03.html" class="active">扩展板块</a>
+                <a href="index04.html">数据看板</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区 -->
+    <div class="page-header">
+        <div class="wave-3"></div>
+        <div class="wave-4"></div>
+        <div class="header-content">
+            <div class="header-text">
+                <h1>扩展板块</h1>
+                <p class="header-description">在这里，你可以记录灵感、构建知识体系</p>
+                <div class="header-features">
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span>灵活的思维导图工具</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <span>快速记录灵感便签</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>多种格式导出支持</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-image">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cstyle%3E.st0%7Bfill:none;stroke:%23ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;%7D%3C/style%3E%3Cg opacity='0.5'%3E%3Ccircle class='st0' cx='400' cy='300' r='150'/%3E%3Cpath class='st0' d='M400 150v-50M400 500v-50M250 300h-50M600 300h-50'/%3E%3Ccircle class='st0' cx='400' cy='300' r='50'/%3E%3C/g%3E%3C/svg%3E" alt="思维导图示意">
+            </div>
+        </div>
+    </div>
+
+    <div class="mindmap-container">
+        <!-- 左侧便签区域 -->
+        <aside class="notes-section">
+            <div class="notes-header">
+                <h2>灵感便签</h2>
+                <button class="add-note-btn" id="addNoteBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>添加便签</span>
+                </button>
+            </div>
+            <div class="notes-list" id="notesList">
+                <!-- 便签将通过 JavaScript 动态添加 -->
+            </div>
+        </aside>
+
+        <!-- 右侧思维导图区域 -->
+        <main class="mindmap-section">
+            <div class="mindmap-header">
+                <h1>思维导图 / 想法中心</h1>
+                <div class="mindmap-actions">
+                    <button class="mindmap-btn create-map-btn" id="createMapBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>创建导图</span>
+                    </button>
+                    <button class="mindmap-btn export-btn" id="exportBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>导出</span>
+                    </button>
+                </div>
+            </div>
+            <div class="mindmap-grid" id="mindmapGrid">
+                <!-- 思维导图卡片将通过 JavaScript 动态添加 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 导出模态框 -->
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <h2>选择导出格式</h2>
+            <div class="export-options">
+                <div class="export-option" data-format="png">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d47a1' d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z'/%3E%3C/svg%3E" alt="PNG">
+                    <h3>PNG 图片</h3>
+                    <p>适合分享和打印</p>
+                </div>
+                <div class="export-option" data-format="pdf">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d47a1' d='M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z'/%3E%3C/svg%3E" alt="PDF">
+                    <h3>PDF 文档</h3>
+                    <p>适合正式场合</p>
+                </div>
+                <div class="export-option" data-format="json">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d47a1' d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z'/%3E%3C/svg%3E" alt="JSON">
+                    <h3>JSON 数据</h3>
+                    <p>可导入其他工具</p>
+                </div>
+                <div class="export-option" data-format="svg">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d47a1' d='M12 22C6.49 22 2 17.51 2 12S6.49 2 12 2s10 4.04 10 9c0 3.31-2.69 6-6 6h-1.77c-.28 0-.5.22-.5.5 0 .12.05.23.13.33.41.47.64 1.06.64 1.67A2.5 2.5 0 0 1 12 22zm0-18c-4.41 0-8 3.59-8 8s3.59 8 8 8c.28 0 .5-.22.5-.5a.54.54 0 0 0-.14-.35c-.41-.46-.63-1.05-.63-1.65a2.5 2.5 0 0 1 2.5-2.5H16c2.21 0 4-1.79 4-4 0-3.86-3.59-7-8-7z'/%3E%3C/svg%3E" alt="SVG">
+                    <h3>SVG 矢量图</h3>
+                    <p>可无损缩放</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="cancelExport">取消</button>
+                <button class="modal-btn export-btn" id="confirmExport">确认导出</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化页面功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 灵感便签功能
+            const addNoteBtn = document.getElementById('addNoteBtn');
+            const notesList = document.getElementById('notesList');
+
+            // 从本地存储加载便签
+            const savedNotes = JSON.parse(localStorage.getItem('notes') || '[]');
+            savedNotes.forEach(note => {
+                createNoteElement(note.content, note.date);
+            });
+
+            // 添加新便签
+            addNoteBtn.addEventListener('click', () => {
+                const note = {
+                    content: '点击编辑便签内容...',
+                    date: new Date().toLocaleString()
+                };
+                createNoteElement(note.content, note.date);
+                saveNotes();
+            });
+
+            function createNoteElement(content, date) {
+                const note = document.createElement('div');
+                note.className = 'note-card';
+                note.innerHTML = `
+                    <div contenteditable="true" class="note-content">${content}</div>
+                    <div class="note-footer">
+                        <span class="note-date">${date}</span>
+                        <button class="delete-note">删除</button>
+                    </div>
+                `;
+
+                const noteContent = note.querySelector('.note-content');
+                
+                // 自适应高度功能
+                noteContent.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                    saveNotes();
+                });
+
+                // 初始化高度
+                setTimeout(() => {
+                    noteContent.style.height = 'auto';
+                    noteContent.style.height = (noteContent.scrollHeight) + 'px';
+                }, 0);
+
+                note.querySelector('.delete-note').addEventListener('click', () => {
+                    note.remove();
+                    saveNotes();
+                });
+
+                notesList.insertBefore(note, notesList.firstChild);
+            }
+
+            function saveNotes() {
+                const notes = Array.from(notesList.children).map(note => ({
+                    content: note.querySelector('.note-content').textContent,
+                    date: note.querySelector('.note-date').textContent
+                }));
+                localStorage.setItem('notes', JSON.stringify(notes));
+            }
+
+            // 思维导图功能
+            const createMapBtn = document.getElementById('createMapBtn');
+            const mindmapGrid = document.getElementById('mindmapGrid');
+            const exportBtn = document.getElementById('exportBtn');
+            const exportModal = document.getElementById('exportModal');
+            const cancelExportBtn = document.getElementById('cancelExport');
+            const confirmExportBtn = document.getElementById('confirmExport');
+
+            // 从本地存储加载思维导图
+            const savedMaps = JSON.parse(localStorage.getItem('mindmaps') || '[]');
+            savedMaps.forEach(map => {
+                createMindmapCard(map.title, map.date);
+            });
+
+            // 创建新思维导图
+            createMapBtn.addEventListener('click', () => {
+                const map = {
+                    title: '新建思维导图',
+                    date: new Date().toLocaleString()
+                };
+                createMindmapCard(map.title, map.date);
+                saveMindmaps();
+            });
+
+            function createMindmapCard(title, date) {
+                const card = document.createElement('div');
+                card.className = 'mindmap-card';
+                card.innerHTML = `
+                    <div class="mindmap-preview">
+                        <span>点击编辑思维导图</span>
+                    </div>
+                    <div class="mindmap-info">
+                        <div class="mindmap-title">${title}</div>
+                        <div class="mindmap-date">${date}</div>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    // TODO: 打开思维导图编辑器
+                    alert('思维导图编辑器功能开发中...');
+                });
+
+                mindmapGrid.insertBefore(card, mindmapGrid.firstChild);
+            }
+
+            function saveMindmaps() {
+                const maps = Array.from(mindmapGrid.children).map(card => ({
+                    title: card.querySelector('.mindmap-title').textContent,
+                    date: card.querySelector('.mindmap-date').textContent
+                }));
+                localStorage.setItem('mindmaps', JSON.stringify(maps));
+            }
+
+            // 导出功能
+            exportBtn.addEventListener('click', () => {
+                exportModal.style.display = 'block';
+                // 使用 setTimeout 来确保过渡效果正常工作
+                setTimeout(() => {
+                    exportModal.classList.add('active');
+                    exportModal.querySelector('.export-modal-content').style.transform = 'scale(1)';
+                    exportModal.querySelector('.export-modal-content').style.opacity = '1';
+                }, 10);
+            });
+
+            function closeExportModal() {
+                exportModal.classList.remove('active');
+                exportModal.querySelector('.export-modal-content').style.transform = 'scale(0.95)';
+                exportModal.querySelector('.export-modal-content').style.opacity = '0';
+                setTimeout(() => {
+                    exportModal.style.display = 'none';
+                }, 300); // 等待过渡效果完成
+            }
+
+            cancelExportBtn.addEventListener('click', closeExportModal);
+            
+            // 点击模态框外部关闭
+            exportModal.addEventListener('click', (e) => {
+                if (e.target === exportModal) {
+                    closeExportModal();
+                }
+            });
+
+            // 导出选项的动画效果
+            const exportOptions = document.querySelectorAll('.export-option');
+            exportOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    exportOptions.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.style.transform = 'translateY(0)';
+                    });
+                    option.classList.add('selected');
+                    option.style.transform = 'translateY(-2px)';
+                });
+            });
+
+            // 思维导图功能
+            const mindmapData = {
+                id: "root",
+                topic: "前端技术框架",
+                expanded: true,
+                children: [
+                    {
+                        id: "1",
+                        topic: "基础技术",
+                        direction: "right",
+                        expanded: true,
+                        children: [
+                            {
+                                id: "1-1",
+                                topic: "HTML5",
+                                children: [
+                                    { id: "1-1-1", topic: "语义化标签" },
+                                    { id: "1-1-2", topic: "Web Storage" },
+                                    { id: "1-1-3", topic: "Web Workers" }
+                                ]
+                            },
+                            {
+                                id: "1-2",
+                                topic: "CSS3",
+                                children: [
+                                    { id: "1-2-1", topic: "Flexbox" },
+                                    { id: "1-2-2", topic: "Grid" },
+                                    { id: "1-2-3", topic: "动画" }
+                                ]
+                            },
+                            {
+                                id: "1-3",
+                                topic: "JavaScript",
+                                children: [
+                                    { id: "1-3-1", topic: "ES6+" },
+                                    { id: "1-3-2", topic: "异步编程" },
+                                    { id: "1-3-3", topic: "模块化" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: "2",
+                        topic: "框架",
+                        direction: "right",
+                        expanded: true,
+                        children: [
+                            {
+                                id: "2-1",
+                                topic: "React",
+                                children: [
+                                    { id: "2-1-1", topic: "Hooks" },
+                                    { id: "2-1-2", topic: "Redux" },
+                                    { id: "2-1-3", topic: "Next.js" }
+                                ]
+                            },
+                            {
+                                id: "2-2",
+                                topic: "Vue",
+                                children: [
+                                    { id: "2-2-1", topic: "Vue3" },
+                                    { id: "2-2-2", topic: "Vuex" },
+                                    { id: "2-2-3", topic: "Nuxt.js" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: "3",
+                        topic: "工具链",
+                        direction: "left",
+                        expanded: true,
+                        children: [
+                            {
+                                id: "3-1",
+                                topic: "构建工具",
+                                children: [
+                                    { id: "3-1-1", topic: "Webpack" },
+                                    { id: "3-1-2", topic: "Vite" }
+                                ]
+                            },
+                            {
+                                id: "3-2",
+                                topic: "包管理器",
+                                children: [
+                                    { id: "3-2-1", topic: "npm" },
+                                    { id: "3-2-2", topic: "yarn" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: "4",
+                        topic: "性能优化",
+                        direction: "left",
+                        expanded: true,
+                        children: [
+                            { id: "4-1", topic: "代码分割" },
+                            { id: "4-2", topic: "懒加载" },
+                            { id: "4-3", topic: "缓存策略" }
+                        ]
+                    }
+                ]
+            };
+
+            // 初始化思维导图
+            const mindmapContainer = document.querySelector('.mindmap-preview');
+            mindmapContainer.innerHTML = '<div id="mindmap"></div>';
+            
+            // 使用 jsMind 初始化思维导图
+            const options = {
+                container: 'mindmap',
+                theme: 'primary',
+                editable: false,
+                mode: 'full',
+                data: mindmapData
+            };
+
+            // 这里需要引入 jsMind 库
+            if (typeof jsMind !== 'undefined') {
+                const mindmap = new jsMind(options);
+                mindmap.show(mindmapData);
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #1565c0 100%);
+            padding: 6rem 0;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        /* 第一层波浪（最底层） */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            right: -100%;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.15' d='M0,192L48,181.3C96,171,192,149,288,154.7C384,160,480,192,576,218.7C672,245,768,267,864,266.7C960,267,1056,245,1152,229.3C1248,213,1344,203,1392,197.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            background-size: 150% 120px;
+            opacity: 0.3;
+            z-index: 1;
+            animation: wave1 20s linear infinite;
+        }
+
+        /* 第二层波浪 */
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            right: -100%;
+            bottom: 20px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.2' d='M0,128L48,144C96,160,192,192,288,197.3C384,203,480,181,576,165.3C672,149,768,139,864,144C960,149,1056,171,1152,176C1248,181,1344,171,1392,165.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            background-size: 150% 100px;
+            opacity: 0.25;
+            z-index: 1;
+            animation: wave2 15s linear infinite;
+        }
+
+        /* 添加第三层波浪 */
+        .wave-3 {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            right: -100%;
+            bottom: 40px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.2' d='M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,90.7C672,85,768,107,864,112C960,117,1056,107,1152,101.3C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            background-size: 150% 80px;
+            opacity: 0.2;
+            z-index: 1;
+            animation: wave3 12s linear infinite;
+        }
+
+        /* 添加第四层波浪 */
+        .wave-4 {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            right: -100%;
+            bottom: 60px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.15' d='M0,32L48,37.3C96,43,192,53,288,80C384,107,480,149,576,160C672,171,768,149,864,128C960,107,1056,85,1152,80C1248,75,1344,85,1392,90.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            background-position: center bottom;
+            background-size: 150% 60px;
+            opacity: 0.15;
+            z-index: 1;
+            animation: wave4 10s linear infinite;
+        }
+
+        /* 波浪动画 */
+        @keyframes wave1 {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes wave2 {
+            0% {
+                transform: translateX(-50%);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes wave3 {
+            0% {
+                transform: translateX(0) translateY(-5px);
+            }
+            50% {
+                transform: translateX(-25%) translateY(5px);
+            }
+            100% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        @keyframes wave4 {
+            0% {
+                transform: translateX(-50%) translateY(5px);
+            }
+            50% {
+                transform: translateX(-25%) translateY(-5px);
+            }
+            100% {
+                transform: translateX(0) translateY(5px);
+            }
+        }
+
+        /* 优化内容层级和阴影 */
+        .header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);  /* 增加文字阴影 */
+        }
+
+        .site-title {
+            font-size: 3.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .site-description {
+            font-size: 1.5rem;
+            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .primary-btn {
+            background: #2ecc71;
+            color: white;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2c3e50;
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .secondary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .trust-badges {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .trust-badges span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trust-badges span::before {
+            content: "★";
+            color: #f1c40f;
+        }
+
+        /* 核心功能展示区样式 */
+        .features-showcase {
+            padding: 4rem 0;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+       /* ... existing code ... */
+
+        /* 导航链接样式优化 */
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.05);
+        }
+
+        .nav-links a.active {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.08);
+        }
+
+        /* 添加下划线动效 */
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: #fff;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 70%;
+        }
+
+        /* 添加缩放效果 */
+        .nav-links a:active {
+            transform: scale(0.95);
+        }
+
+        /* 搜索框样式优化 */
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(245, 245, 245, 0.8);
+            border-radius: 24px;
+            padding: 0.3rem 0.8rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .search-box:hover,
+        .search-box:focus-within {
+            background: #ffffff;
+            border-color: #0d47a1;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.1);
+        }
+
+        .search-box input {
+            border: none;
+            background: none;
+            padding: 0.6rem;
+            font-size: 0.95rem;
+            width: 200px;
+            color: #333;
+            font-family: inherit;
+            transition: width 0.3s ease;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .search-box:focus-within input::placeholder {
+            color: #bbb;
+        }
+
+        .search-box input:focus {
+            width: 250px;
+            outline: none;
+        }
+
+        .search-box button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border-radius: 50%;
+        }
+
+        .search-icon {
+            font-size: 1.1rem;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:hover .search-icon,
+        .search-box:focus-within .search-icon {
+            color: #0d47a1;
+        }
+
+        .search-box button:hover {
+            background: rgba(13, 71, 161, 0.1);
+            transform: rotate(5deg);
+        }
+
+        /* 添加搜索建议下拉框样式 */
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-top: 0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within .search-suggestions {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .suggestion-item {
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(13, 71, 161, 0.05);
+        }
+
+        /* 修改导航容器样式以适应新的搜索框 */
+        .nav-container {
+            position: relative;
+        }
+
+        /* Main 区域样式优化 */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+
+        /* 章节通用样式 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .view-all {
+            color: #2196f3;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+                /* 两列布局样式 */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        /* 精选专题样式 */
+        .featured-topics {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .topics-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .topic-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .topic-icon {
+            flex-shrink: 0;
+            width: 140px;
+            height: 140px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .topic-content {
+            flex: 1;
+            text-align: left;
+            margin-top: 0;
+        }
+
+        .topic-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+
+        .topic-content p {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .topic-meta {
+            display: flex;
+            gap: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin: 0.8rem 0;
+        }
+
+        .topic-link {
+            display: inline-block;
+            color: #0d47a1;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        /* 最新更新样式 */
+        .latest-updates {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border: none;
+            border-radius: 20px;
+            background: #f0f2f5;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #0d47a1;
+            color: white;
+        }
+
+        .updates-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .update-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .update-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .category-tag {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 0.3rem 0.8rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .author img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* 通用样式 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .view-all {
+            color: #0d47a1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* 响应式布局 */
+        @media (max-width: 1024px) {
+            .two-column-layout {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .topics-grid,
+            .updates-list {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .category-filters {
+                display: none; /* 在移动端可以改为下拉菜单 */
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .card-header,
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .topic-card,
+        .update-card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* 学习路线样式 */
+        .path-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            background: #eee;
+            height: 8px;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .progress {
+            background: #4caf50;
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .path-steps {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .path-steps li {
+            padding: 0.5rem 0;
+            color: #666;
+        }
+
+        .path-steps li.completed {
+            color: #4caf50;
+        }
+
+        .path-steps li.current {
+            color: #2196f3;
+            font-weight: 500;
+        }
+
+        /* 热门讨论样式 */
+        .discussion-card {
+            display: flex;
+            gap: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .discussion-votes {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .vote-count {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #2196f3;
+        }
+
+       
+
+        /* 页脚样式 */
+        footer {
+            background: #1a237e;
+            color: white;
+            padding: 3rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 0 20px;
+        }
+
+        
+
+        /* 新增：标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 新增：文章元信息样式 */
+        .article-meta {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 添加以下样式到 <style> 标签中 */
+        /* 浮动提交按钮样式 */
+        .floating-submit-btn {
+            position: fixed;
+            right: 30px;
+            top: 75vh;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #0d47a1;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-submit-btn:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(13, 71, 161, 0.3);
+        }
+
+        .floating-submit-btn svg {
+            transition: transform 0.3s ease;
+        }
+
+        .floating-submit-btn:hover svg {
+            transform: rotate(90deg);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0d47a1;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #0d47a1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 继续学习按钮样式 */
+        .continue-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(13, 71, 161, 0.2);
+        }
+
+        .continue-btn::after {
+            content: '→';
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.3);
+        }
+
+        .continue-btn:hover::after {
+            transform: translateX(4px);
+        }
+
+        .continue-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(13, 71, 161, 0.2);
+        }
+
+        /* 添加新的样���规则 */
+        .topic-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .topic-icon {
+            width: 160px;
+            height: 160px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .topic-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .topic-content {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .author img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .path-header {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .path-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .path-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+        }
+
+        .discussion-image {
+            width: 240px;
+            height: 135px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .discussion-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+
+</head>
+<body>
+    <header>
+        <div class="wave-3"></div>
+        <div class="wave-4"></div>
+        <div class="header-content">
+            <h1 class="site-title">AI知识库搭建系统</h1>
+            <p class="site-description">一站式知识管理与智能问答平台</p>
+            <div class="header-actions">
+                <button class="primary-btn" id="scrollToFeatured">开始使用</button>
+                <button class="secondary-btn">查看演示</button>
+            </div>
+            <div class="trust-badges">
+                <span>4.9/5 用户评分</span>
+                <span>10,000+ 西北大学用户信赖</span>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="index.html" class="active">首页</a>
+                <a href="index01.html">技术笔记</a>
+                <a href="index02.html">学习心得</a>
+                <a href="index03.html">扩展板块</a>
+                <a href="index04.html">数据看板</a>
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="搜索文章、笔记..." autocomplete="off">
+                <button type="submit">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+                <!-- 搜索建议下拉框 -->
+                <div class="search-suggestions">
+                    <div class="suggestion-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                            <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                        </svg>
+                        <span>最近搜索：Vue.js 组件开发</span>
+                    </div>
+                    <div class="suggestion-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                            <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                        </svg>
+                        <span>热门搜索：React Hooks 教程</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- 在 <body> 中添加以下内容 -->
+    <!-- 浮动提交按钮 -->
+    <button class="floating-submit-btn" id="openSubmitForm">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>提交笔记</span>
+    </button>
+
+    <!-- 弹窗表单 -->
+    <div class="modal" id="submitModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>提交笔记</h2>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <form id="submitNoteForm">
+                <div class="form-group">
+                    <label for="noteTitle">笔记标题</label>
+                    <input type="text" id="noteTitle" required placeholder="请输入笔记标题">
+                </div>
+                <div class="form-group">
+                    <label for="noteCategory">分类</label>
+                    <select id="noteCategory" required>
+                        <option value="">请选择分类</option>
+                        <option value="frontend">前端开发</option>
+                        <option value="backend">后端开发</option>
+                        <option value="database">数据库</option>
+                        <option value="devops">DevOps</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="noteTags">标签</label>
+                    <input type="text" id="noteTags" placeholder="使用逗号分隔多个标签">
+                </div>
+                <div class="form-group">
+                    <label for="noteLink">笔记链接</label>
+                    <input type="url" id="noteLink" required placeholder="请输入笔记链接">
+                </div>
+                <div class="form-group">
+                    <label for="noteDesc">简要描述</label>
+                    <textarea id="noteDesc" rows="4" placeholder="请简要描述笔记内容"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelSubmit">取消</button>
+                    <button type="submit" class="btn-primary">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main>
+        <div class="two-column-layout">
+            <!-- 精选专题 -->
+            <section class="featured-topics">
+                <div class="section-header">
+                    <h2>精选专题</h2>
+                    <a href="#" class="view-all">查看全部 →</a>
+                </div>
+                <div class="topics-grid">
+                    <div class="topic-card">
+                        <div class="topic-icon">
+                            <img src="https://picsum.photos/160/160?random=1" alt="Vue.js">
+                        </div>
+                        <div class="topic-content">
+                            <h3>Vue.js 完全指南</h3>
+                            <p>从入门到精通的 Vue.js 学习路线，包含实战项目和性能优化最佳实践。</p>
+                            <div class="topic-meta">
+                                <span>32 篇文章</span>
+                                <span>更新于 2天前</span>
+                            </div>
+                            <a href="#" class="topic-link">开始学习 →</a>
+                        </div>
+                    </div>
+                    <div class="topic-card">
+                        <div class="topic-icon">
+                            <img src="https://picsum.photos/160/160?random=2" alt="React">
+                        </div>
+                        <div class="topic-content">
+                            <h3>React 开发实战</h3>
+                            <p>深入学习 React 生态系统，掌握 Hooks、Redux 和性能优化技巧。</p>
+                            <div class="topic-meta">
+                                <span>28 篇文章</span>
+                                <span>更新于 1天前</span>
+                            </div>
+                            <a href="#" class="topic-link">开始学习 →</a>
+                        </div>
+                    </div>
+                    <!-- 更多专题卡片 -->
+                </div>
+            </section>
+    
+           
+        <script>
+            // 取DOM元素
+            const openBtn = document.getElementById('openSubmitForm');    // 提交按钮
+            const modal = document.getElementById('submitModal');         // 弹窗
+            const closeBtn = document.getElementById('closeModal');       // 关闭按钮
+            const cancelBtn = document.getElementById('cancelSubmit');    // 取消按钮
+            const form = document.getElementById('submitNoteForm');       // 表单
+    
+            // 添加滚动到精选专题的功能
+            document.getElementById('scrollToFeatured').addEventListener('click', () => {
+                const featuredSection = document.querySelector('.featured-topics');
+                const offset = 150; // 增加偏移量到150px
+                const targetPosition = featuredSection.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            });
+    
+            // 打开模态框
+            openBtn.addEventListener('click', () => {
+                modal.style.display = 'block';  // 显示弹窗
+                document.body.style.overflow = 'hidden'; // 防止背景滚动
+            });
+    
+            // 关闭模态框的函��
+            function closeModal() {
+                modal.style.display = 'none';   // 隐藏弹窗
+                document.body.style.overflow = 'auto';
+                form.reset(); // 重置表单
+            }
+    
+            // 点击关闭按钮关闭弹窗
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+    
+            // 点击模态框外部关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+    
+            // 表单提交处理
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // 获取表单数据
+                const formData = {
+                    title: document.getElementById('noteTitle').value,
+                    category: document.getElementById('noteCategory').value,
+                    tags: document.getElementById('noteTags').value.split(',').map(tag => tag.trim()),
+                    link: document.getElementById('noteLink').value,
+                    description: document.getElementById('noteDesc').value
+                };
+    
+                // 这里添加提交数据的逻辑
+                console.log('提交的笔记数据', formData);
+                
+                // 提交成功后关闭模态框
+                closeModal();
+                
+                // 可以添加一个提示
+                alert('笔记提交成功！');
+            });
+        </script>  
+
+            <!-- 最新更新 -->
+            <section class="latest-updates">
+                <div class="section-header">
+                    <h2>最新更新</h2>
+                    <div class="category-filters">
+                        <button class="filter-btn active">全部</button>
+                        <button class="filter-btn">前端</button>
+                        <button class="filter-btn">后端</button>
+                    </div>
+                </div>
+                <div class="updates-list">
+                    <article class="update-card">
+                        <div class="card-header">
+                            <span class="category-tag">前端开发</span>
+                            <time>2024-03-20</time>
+                        </div>
+                        <h3>深入理解 Vue3 Composition API</h3>
+                        <p>探索 Vue3 合式 API 的核心概念和最佳实践...</p>
+                        <div class="card-footer">
+                            <div class="author">
+                                <img src="https://picsum.photos/40/40?random=2" alt="作者头像">
+                                <span>张三</span>
+                            </div>
+                            <div class="stats">
+                                <span>👁️ 1.2k</span>
+                                <span>💬 26</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="update-card">
+                        <div class="card-header">
+                            <span class="category-tag">后端开发</span>
+                            <time>2024-03-19</time>
+                        </div>
+                        <h3>Spring Boot 微服务实践指南</h3>
+                        <p>从零开始构建高可用的微服务架构，包含服务注册、配置中心、服务网关等核心组件...</p>
+                        <div class="card-footer">
+                            <div class="author">
+                                <img src="https://picsum.photos/40/40?random=3" alt="作者头像">
+                                <span>李四</span>
+                            </div>
+                            <div class="stats">
+                                <span>👁️ 980</span>
+                                <span>💬 18</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="update-card">
+                        <div class="card-header">
+                            <span class="category-tag">数据库</span>
+                            <time>2024-03-18</time>
+                        </div>
+                        <h3>MongoDB 高级查询和性能优化</h3>
+                        <p>深入解析 MongoDB 的索引策略、聚合管道，以及大规模数据处理的性能调优技巧...</p>
+                        <div class="card-footer">
+                            <div class="author">
+                                <img src="https://picsum.photos/40/40?random=4" alt="作者头像">
+                                <span>王五</span>
+                            </div>
+                            <div class="stats">
+                                <span>👁️ 856</span>
+                                <span>💬 15</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="update-card">
+                        <div class="card-header">
+                            <span class="category-tag">DevOps</span>
+                            <time>2024-03-17</time>
+                        </div>
+                        <h3>Docker 容器化部署实战</h3>
+                        <p>掌握 Docker 容器技术，从环境搭建到生产环境的自动化部署全流程详解...</p>
+                        <div class="card-footer">
+                            <div class="author">
+                                <img src="https://picsum.photos/40/40?random=5" alt="作者头像">
+                                <span>赵六</span>
+                            </div>
+                            <div class="stats">
+                                <span>👁️ 723</span>
+                                <span>💬 12</span>
+                            </div>
+                        </div>
+                    </article>
+                    <!-- 更多更新卡片 -->
+                </div>
+            </section>
+        </div>
+    
+        <!-- 学习路线图 -->
+        <section class="learning-paths">
+            <div class="section-header">
+                <h2>推荐学习路线</h2>
+                <a href="#" class="view-all">更多路线 →</a>
+            </div>
+            <div class="paths-container">
+                <div class="path-card">
+                    <div class="path-header">
+                        <img src="https://picsum.photos/500/200?random=3" alt="前端工程师路线" class="path-image">
+                        <div class="path-info">
+                            <h3>前端工程师成长路线</h3>
+                            <span class="difficulty">入门到高级</span>
+                        </div>
+                    </div>
+                    <div class="path-progress">
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 60%"></div>
+                        </div>
+                        <span>60% 完成</span>
+                    </div>
+                    <ul class="path-steps">
+                        <li class="completed">HTML & CSS 基础</li>
+                        <li class="completed">JavaScript 核心</li>
+                        <li class="current">前端框架</li>
+                        <li>工程化工具</li>
+                    </ul>
+                    <button class="continue-btn">继续学习</button>
+                </div>
+                <!-- 更多路线卡片 -->
+            </div>
+        </section>
+    
+        <!-- 热门讨论 -->
+        <section class="hot-discussions">
+            <div class="section-header">
+                <h2>热门讨论</h2>
+                <a href="#" class="view-all">参与讨论 →</a>
+            </div>
+            <div class="discussions-list">
+                <div class="discussion-card">
+                    <div class="discussion-image">
+                        <img src="https://picsum.photos/240/135?random=4" alt="讨论主题">
+                    </div>
+                    <div class="discussion-votes">
+                        <span class="vote-count">42</span>
+                        <span class="vote-label">赞同</span>
+                    </div>
+                    <div class="discussion-content">
+                        <h3>如何优化前端性能？</h3>
+                        <p>分享一下大家在实际项目中使用的前端性能优化方案...</p>
+                        <div class="discussion-meta">
+                            <span>24 回复</span>
+                            <span>2小时前</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 更多讨论卡片 -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div>
+                <h4>关于网站</h4>
+                <p>这是一个分享技术知识和学习经验的个人网站，目前正在不断完善中...</p>
+            </div>
+            <div>
+                <h4>联系方式</h4>
+                <p>有任何题可以联系jtxw03@gmail.com</p>
+                <!-- 添加联系方式 -->
+            </div>
+            <div>
+                <h4>友情链接</h4>
+                <!-- 添加友情链接 -->
+            </div>
+            <div>
+                <h4>订阅更新</h4>
+                <!-- 添加订阅表单 -->
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

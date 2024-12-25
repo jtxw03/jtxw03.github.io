@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习心得 - 我的知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.05);
+        }
+
+        .nav-links a.active {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.08);
+        }
+
+        /* 主要内容区域 */
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        /* 侧边栏样式优化 */
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-section {
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .sidebar-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: #0d47a1;
+            border-radius: 2px;
+        }
+
+        .category-list,
+        .tag-list {
+            list-style: none;
+        }
+
+        .category-list li,
+        .tag-list li {
+            margin-bottom: 0.8rem;
+        }
+
+        .category-list a,
+        .tag-list a {
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .category-list a:hover,
+        .tag-list a:hover {
+            color: #0d47a1;
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .category-count,
+        .tag-count {
+            background: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: #666;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 右侧内容区域样式优化 */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* 课程表样式优化 */
+        .course-schedule {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        /* 文章列表样式调整 */
+        .article-list {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .article-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .article-content {
+            padding: 1.5rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .article-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .article-excerpt {
+            color: #666;
+            margin-bottom: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .article-tags {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: #eef2f7;
+            color: #666;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .read-more {
+            color: #0d47a1;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .read-more:hover {
+            text-decoration: underline;
+        }
+
+        /* 阅读进度指示器 */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: transparent;
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #0d47a1;
+            width: 0;
+            transition: width 0.1s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* 个人头像区域样式 */
+        .profile-section {
+            text-align: center;
+            padding: 2rem 0;
+            background: linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(228, 231, 235, 0.95) 100%),
+                        url('https://picsum.photos/1920/300') center/cover no-repeat;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 添加背景图片更换按钮样式 */
+        .change-bg-btn {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .change-bg-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .change-bg-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 添加背景图片的遮罩效果 */
+        .profile-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(2px);
+            z-index: 0;
+        }
+
+        /* 确保头像和文字在遮罩层之上 */
+        .profile-avatar,
+        .profile-name,
+        .profile-bio {
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+            background: white;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-bio {
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.17rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f2f5;
+        }
+
+        .schedule-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .schedule-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: #0d47a1;
+            border-radius: 2px;
+        }
+
+        .edit-schedule {
+            color: #0d47a1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: #e3f2fd;
+            transition: all 0.3s ease;
+        }
+
+        .edit-schedule:hover {
+            background: #bbdefb;
+            transform: translateY(-2px);
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            gap: 0.8rem;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+        }
+
+        .schedule-time,
+        .schedule-day {
+            text-align: center;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .schedule-day {
+            background: #e3f2fd;
+            color: #0d47a1;
+            font-weight: 600;
+        }
+
+        .schedule-cell {
+            padding: 0.8rem;
+            border-radius: 10px;
+            background: #f8f9fa;
+            min-height: 70px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .schedule-cell:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.1);
+        }
+
+        .schedule-cell.has-class {
+            background: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #bbdefb;
+        }
+
+        .course-name {
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.95rem;
+        }
+
+        .course-room {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .course-room::before {
+            content: '📍';
+            font-size: 0.9rem;
+        }
+
+        /* 分类列表重新排序 */
+        .category-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .category-item:hover {
+            background: #e3f2fd;
+            transform: translateY(-3px);
+        }
+
+        .category-item.active {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-name {
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+
+        /* 高亮分类样式 */
+        .category-list a.active {
+            background: #e3f2fd;
+            color: #0d47a1;
+            font-weight: 500;
+        }
+
+        .category-list a.active .category-count {
+            background: #0d47a1;
+            color: white;
+        }
+
+        /* 添加内容区域锚点样式 */
+        .content-section {
+            scroll-margin-top: 100px; /* 确保滚动到锚点时有足够空间 */
+        }
+
+        /* 隐藏的内容区域 */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .course-edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .course-edit-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .course-edit-modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0d47a1;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-footer button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-save {
+            background: #0d47a1;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #1565c0;
+        }
+
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .schedule-cell.editing {
+            background: #e3f2fd;
+            border: 2px solid #0d47a1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="index01.html">技术笔记</a>
+                <a href="index02.html" class="active">学习心得</a>
+                <a href="index03.html">扩展板块</a>
+                <a href="index04.html">数据看板</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 个人头像区域 -->
+    <section class="profile-section">
+        <button class="change-bg-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            更换背景
+        </button>
+        <img src="images/ima07.jpg" alt="个人头像" class="profile-avatar">
+        <h2 class="profile-name">徐凯凯</h2>
+        <p class="profile-bio">西北大学 · 网络与新媒体 · 2022级</p>
+    </section>
+
+    <!-- 主要内容区域 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">学习分类</h3>
+                <div class="category-section">
+                    <div class="category-item active" data-target="school-courses">
+                        <div class="category-icon">📚</div>
+                        <div class="category-name">学校课程</div>
+                        <div class="category-count">6</div>
+                    </div>
+                    <div class="category-item" data-target="tech-learning">
+                        <div class="category-icon">💻</div>
+                        <div class="category-name">技术学习</div>
+                        <div class="category-count">12</div>
+                    </div>
+                    <div class="category-item" data-target="reading-notes">
+                        <div class="category-icon">📝</div>
+                        <div class="category-name">读书笔记</div>
+                        <div class="category-count">8</div>
+                    </div>
+                    <div class="category-item" data-target="projects">
+                        <div class="category-icon">🎯</div>
+                        <div class="category-name">实践项目</div>
+                        <div class="category-count">5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">热门标签</h3>
+                <ul class="tag-list">
+                    <li>
+                        <a href="#">
+                            <span>JavaScript</span>
+                            <span class="tag-count">15</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span>Vue.js</span>
+                            <span class="tag-count">10</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span>React</span>
+                            <span class="tag-count">8</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <span>Node.js</span>
+                            <span class="tag-count">6</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- 右侧内容区域 -->
+        <main class="content-area">
+            <!-- 学校课程部分 -->
+            <div id="school-courses" class="content-section active">
+                <!-- 课程表部分 -->
+                <div class="course-schedule">
+                    <div class="schedule-header">
+                        <h3 class="schedule-title">本周课程表</h3>
+                        <a href="#" class="edit-schedule">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            编辑课表
+                        </a>
+                    </div>
+                    <div class="schedule-grid">
+                        <div class="schedule-time"></div>
+                        <div class="schedule-day">周一</div>
+                        <div class="schedule-day">周二</div>
+                        <div class="schedule-day">周三</div>
+                        <div class="schedule-day">周四</div>
+                        <div class="schedule-day">周五</div>
+                        <div class="schedule-day">周六</div>
+                        <div class="schedule-day">周日</div>
+
+                        <!-- 第一节课时间段 -->
+                        <div class="schedule-time">8:00</div>
+                        <div class="schedule-cell has-class">
+                            <div class="course-name">大学生职业规划</div>
+                            <div class="course-room">1J301</div>
+                        </div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell has-class">
+                            <div class="course-name">动漫制作</div>
+                            <div class="course-room">东1001</div>
+                        </div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell has-class">
+                            <div class="course-name">用户分析</div>
+                            <div class="course-room">3310</div>
+                        </div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell"></div>
+
+                        <!-- 第二节课时间段 -->
+                        <div class="schedule-time">10:00</div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell has-class">
+                            <div class="course-name">习思想</div>
+                            <div class="course-room">3J301</div>
+                        </div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell has-class">
+                            <div class="course-name">交互设计</div>
+                            <div class="course-room">东1001</div>
+                        </div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell"></div>
+                        <div class="schedule-cell"></div>
+                    </div>
+                </div>
+
+                <div class="article-list">
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=2" alt="高等数学学习方法" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-20</span>
+                                <span>阅读时长：10分钟</span>
+                            </div>
+                            <h2 class="article-title">高等数学学习方法总结</h2>
+                            <p class="article-excerpt">
+                                通过一学期的高等数学学习，我总结了一些有效的学习方法和解题技巧。本文将分享如何理解复杂概念、掌握证明方法，以及提高解题效率的经验...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">高等数学</span>
+                                    <span class="tag">学习方法</span>
+                                </div>
+                                <a href="#" class="read-more">
+                                    阅读全文
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- 技术学习部分 -->
+            <div id="tech-learning" class="content-section">
+                <div class="article-list">
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=3" alt="Vue3实践" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-20</span>
+                                <span>阅读时长：10分钟</span>
+                            </div>
+                            <h2 class="article-title">Vue3 组合式API的实践心得</h2>
+                            <p class="article-excerpt">
+                                在使用Vue3的组合式API进行开发的过程中，我发现了一些有趣的模式和最佳实践。本文将分享我在实际项目中的经验和心得，包括如何组织代码、处理副作用、以及优化性能等方面的内容...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">Vue.js</span>
+                                    <span class="tag">前端开发</span>
+                                </div>
+                                <a href="#" class="read-more">
+                                    阅读全文
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=4" alt="React Hooks" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-18</span>
+                                <span>阅读时长：8分钟</span>
+                            </div>
+                            <h2 class="article-title">React Hooks 使用技巧总结</h2>
+                            <p class="article-excerpt">
+                                React Hooks 的出现让函数组件变得更加强大。通过实际项目的积累，我总结了一些 Hooks 的使用技巧���注意事项，希望能帮助大家更好地使用 React Hooks...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">React</span>
+                                    <span class="tag">前端开发</span>
+                                </div>
+                                <a href="#" class="read-more">
+                                    阅读全文
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=5" alt="TypeScript" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-15</span>
+                                <span>阅读时长：12分钟</span>
+                            </div>
+                            <h2 class="article-title">TypeScript 高级特性实战</h2>
+                            <p class="article-excerpt">
+                                深入探讨 TypeScript 的高级类型系统，包括条件类型、映射类型、类型推导等特性。通过实际项目案例，展示如何利用这些特性提升代码的类型安全性...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">TypeScript</span>
+                                    <span class="tag">前端开发</span>
+                                </div>
+                                <a href="#" class="read-more">阅读全文</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- 读书笔记部分 -->
+            <div id="reading-notes" class="content-section">
+                <div class="article-list">
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=6" alt="代码整洁之道" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-10</span>
+                                <span>阅读时长：15分钟</span>
+                            </div>
+                            <h2 class="article-title">《代码整洁之道》读书笔记</h2>
+                            <p class="article-excerpt">
+                                通过阅读《代码整洁之道》，深入理解了什么是真正的整洁代码，以及如何在实际项目中应用这些原则。本文总结了书中的核心观点和实践建议...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">读书笔记</span>
+                                    <span class="tag">代码质量</span>
+                                </div>
+                                <a href="#" class="read-more">阅读全文</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <!-- 实践项目部分 -->
+            <div id="projects" class="content-section">
+                <div class="article-list">
+                    <article class="article-card">
+                        <img src="https://picsum.photos/800/400?random=7" alt="个人知识库系统" class="article-cover">
+                        <div class="article-content">
+                            <div class="article-meta">
+                                <span>2024-03-05</span>
+                                <span>阅读时长：20分钟</span>
+                            </div>
+                            <h2 class="article-title">从零搭建个人知识库系统</h2>
+                            <p class="article-excerpt">
+                                记录了如何使用现代前端技术栈搭建一个个人知识库系统的完整过程，包括技术选型、架构设计、功能实现等各个环节的详细说明...
+                            </p>
+                            <div class="article-footer">
+                                <div class="article-tags">
+                                    <span class="tag">项目实践</span>
+                                    <span class="tag">全栈开发</span>
+                                </div>
+                                <a href="#" class="read-more">阅读全文</a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加课程编辑模态框 -->
+    <div class="course-edit-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑课程信息</h3>
+                <button class="close-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="courseForm">
+                    <div class="form-group">
+                        <label for="courseName">课程名称</label>
+                        <input type="text" id="courseName" name="courseName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseRoom">教室</label>
+                        <input type="text" id="courseRoom" name="courseRoom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="courseTeacher">教师</label>
+                        <input type="text" id="courseTeacher" name="courseTeacher">
+                    </div>
+                    <div class="form-group">
+                        <label for="courseNote">备注</label>
+                        <textarea id="courseNote" name="courseNote" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel">取消</button>
+                <button class="btn-save">保存</button>
+                <button class="btn-delete" style="display: none;">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 分类切换功能
+            const categoryItems = document.querySelectorAll('.category-item');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            categoryItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    // 移除所有活动状态
+                    categoryItems.forEach(i => i.classList.remove('active'));
+                    contentSections.forEach(s => s.classList.remove('active'));
+
+                    // 添加新的活动状态
+                    item.classList.add('active');
+                    const targetId = item.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    targetSection.classList.add('active');
+
+                    // 平滑滚动到目标区域，添加偏移量
+                    const offset = 80;
+                    const targetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // 课程表编辑功能
+            const scheduleCells = document.querySelectorAll('.schedule-cell');
+            const editScheduleBtn = document.querySelector('.edit-schedule');
+            const modal = document.querySelector('.course-edit-modal');
+            const closeModalBtn = modal.querySelector('.close-modal');
+            const saveBtn = modal.querySelector('.btn-save');
+            const cancelBtn = modal.querySelector('.btn-cancel');
+            const deleteBtn = modal.querySelector('.btn-delete');
+            const courseForm = document.getElementById('courseForm');
+            let currentCell = null;
+            let isEditMode = false;
+
+            // 加载保存的课程表数据
+            const loadScheduleData = () => {
+                const savedData = localStorage.getItem('courseSchedule');
+                if (savedData) {
+                    const scheduleData = JSON.parse(savedData);
+                    scheduleCells.forEach((cell, index) => {
+                        const cellData = scheduleData[index];
+                        if (cellData) {
+                            cell.innerHTML = `
+                                <div class="course-name">${cellData.name || ''}</div>
+                                <div class="course-room">${cellData.room || ''}</div>
+                                ${cellData.teacher ? `<div class="course-teacher">${cellData.teacher}</div>` : ''}
+                            `;
+                            if (cellData.name || cellData.room) {
+                                cell.classList.add('has-class');
+                            }
+                        }
+                    });
+                }
+            };
+
+            // 保存课程表数据
+            const saveScheduleData = () => {
+                const scheduleData = {};
+                scheduleCells.forEach((cell, index) => {
+                    const courseName = cell.querySelector('.course-name')?.textContent;
+                    const courseRoom = cell.querySelector('.course-room')?.textContent;
+                    const courseTeacher = cell.querySelector('.course-teacher')?.textContent;
+                    if (courseName || courseRoom || courseTeacher) {
+                        scheduleData[index] = {
+                            name: courseName || '',
+                            room: courseRoom || '',
+                            teacher: courseTeacher || ''
+                        };
+                    }
+                });
+                localStorage.setItem('courseSchedule', JSON.stringify(scheduleData));
+            };
+
+            // 切换编辑模式
+            editScheduleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                isEditMode = !isEditMode;
+                editScheduleBtn.innerHTML = isEditMode ? 
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"></path></svg>完成' : 
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>编辑课表';
+                
+                editScheduleBtn.style.background = isEditMode ? '#bbdefb' : '#e3f2fd';
+                
+                scheduleCells.forEach(cell => {
+                    cell.style.cursor = isEditMode ? 'pointer' : 'default';
+                });
+
+                if (!isEditMode) {
+                    saveScheduleData();
+                }
+            });
+
+            // 打开模态框
+            const openModal = (cell) => {
+                currentCell = cell;
+                const courseName = cell.querySelector('.course-name')?.textContent || '';
+                const courseRoom = cell.querySelector('.course-room')?.textContent || '';
+                const courseTeacher = cell.querySelector('.course-teacher')?.textContent || '';
+
+                document.getElementById('courseName').value = courseName;
+                document.getElementById('courseRoom').value = courseRoom;
+                document.getElementById('courseTeacher').value = courseTeacher;
+
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+                deleteBtn.style.display = cell.classList.contains('has-class') ? 'block' : 'none';
+                
+                cell.classList.add('editing');
+            };
+
+            // 关闭模态框
+            const closeModal = () => {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    courseForm.reset();
+                }, 300);
+                if (currentCell) {
+                    currentCell.classList.remove('editing');
+                    currentCell = null;
+                }
+            };
+
+            // 保存课程信息
+            const saveCourse = () => {
+                if (!currentCell || !courseForm.checkValidity()) return;
+
+                const courseName = document.getElementById('courseName').value;
+                const courseRoom = document.getElementById('courseRoom').value;
+                const courseTeacher = document.getElementById('courseTeacher').value;
+
+                if (courseName || courseRoom) {
+                    currentCell.innerHTML = `
+                        <div class="course-name">${courseName}</div>
+                        <div class="course-room">${courseRoom}</div>
+                        ${courseTeacher ? `<div class="course-teacher">${courseTeacher}</div>` : ''}
+                    `;
+                    currentCell.classList.add('has-class');
+                } else {
+                    currentCell.innerHTML = '';
+                    currentCell.classList.remove('has-class');
+                }
+
+                saveScheduleData();
+                closeModal();
+            };
+
+            // 删除课程
+            const deleteCourse = () => {
+                if (!currentCell) return;
+                currentCell.innerHTML = '';
+                currentCell.classList.remove('has-class');
+                saveScheduleData();
+                closeModal();
+            };
+
+            // 事件监听
+            scheduleCells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    if (!isEditMode) return;
+                    openModal(cell);
+                });
+            });
+
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            saveBtn.addEventListener('click', saveCourse);
+            deleteBtn.addEventListener('click', deleteCourse);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // 加载初始数据
+            loadScheduleData();
+
+            // 背景图片更换功能
+            const changeBgBtn = document.querySelector('.change-bg-btn');
+            const profileSection = document.querySelector('.profile-section');
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            
+            const updateBackground = (imageUrl) => {
+                profileSection.style.background = `
+                    linear-gradient(135deg, rgba(245, 247, 250, 0.95) 0%, rgba(228, 231, 235, 0.95) 100%),
+                    url('${imageUrl}') center/cover no-repeat
+                `;
+                localStorage.setItem('profileBackground', imageUrl);
+            };
+
+            // 加载保存的背景图片
+            const savedBackground = localStorage.getItem('profileBackground');
+            if (savedBackground) {
+                updateBackground(savedBackground);
+            }
+            
+            changeBgBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                if (!file.type.startsWith('image/')) {
+                    alert('请选择图片文件！');
+                    return;
+                }
+
+                // 验证文件大小（5MB限制）
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('图片大小不能超过5MB！');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    updateBackground(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术笔记 - 我的知识库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.05);
+        }
+
+        .nav-links a.active {
+            color: #0d47a1;
+            background-color: rgba(13, 71, 161, 0.08);
+        }
+
+        /* 主容器样式 */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* 文章卡片样式 */
+        .article-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .article-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .article-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .article-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .article-excerpt {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: #bbdefb;
+            transform: translateY(-1px);
+        }
+
+        /* 右侧边栏样式 */
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .sidebar-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 18px;
+            background: #0d47a1;
+            border-radius: 2px;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .category-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .category-name {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .category-count {
+            background: white;
+            color: #666;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 搜索和统计区域容器 */
+        .top-section {
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+            background: #f5f7fa;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #0d47a1;
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        /* 移除进度条样式 */
+        .progress-bar {
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                margin-top: 2rem;
+            }
+        }
+
+        /* 统计卡片样式 */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #0d47a1, #42a5f5);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #0d47a1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stats-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .stats-trend.up {
+            color: #4caf50;
+        }
+
+        .stats-trend.down {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="index.html">首页</a>
+                <a href="index01.html" class="active">技术笔记</a>
+                <a href="index02.html">学习心得</a>
+                <a href="index03.html">扩展板块</a>
+                <a href="index04.html">数据看板</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="container">
+        <!-- 左侧文章列表 -->
+        <main>
+            <!-- 搜索和统计区域 -->
+            <div class="top-section">
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="搜索技术笔记...">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </div>
+
+                <!-- 统计概览 -->
+                <section class="stats-section">
+                    <div class="stats-card">
+                        <div class="stats-number">42</div>
+                        <div class="stats-label">技术文章</div>
+                        <div class="stats-trend up">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 15l-6-6-6 6"/>
+                            </svg>
+                            <span>较上月 +8</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number">6</div>
+                        <div class="stats-label">技术专题</div>
+                        <div class="stats-trend up">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 15l-6-6-6 6"/>
+                            </svg>
+                            <span>较上月 +2</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number">2.8k</div>
+                        <div class="stats-label">总阅读量</div>
+                        <div class="stats-trend up">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 15l-6-6-6 6"/>
+                            </svg>
+                            <span>较上月 +15%</span>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number">18</div>
+                        <div class="stats-label">技术标签</div>
+                        <div class="stats-trend up">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 15l-6-6-6 6"/>
+                            </svg>
+                            <span>较上月 +3</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 文章列表 -->
+            <article class="article-card">
+                <h2 class="article-title">深入理解 JavaScript 异步编程</h2>
+                <div class="article-meta">
+                    <span>发布于：2024-03-20</span>
+                    <span>阅读时长：15分钟</span>
+                </div>
+                <p class="article-excerpt">
+                    本文深入探讨了 JavaScript 中的异步编程概念，包括 Promise、async/await 的使用技巧，以及常见的异步编程模式。通过实际案例，帮助你更好地理解和应用这些重要的概念...
+                </p>
+                <div class="tags">
+                    <span class="tag">JavaScript</span>
+                    <span class="tag">异步编程</span>
+                    <span class="tag">Promise</span>
+                </div>
+            </article>
+
+            <article class="article-card">
+                <h2 class="article-title">React Hooks 最佳实践指南</h2>
+                <div class="article-meta">
+                    <span>发布于：2024-03-18</span>
+                    <span>阅读时长：12分钟</span>
+                </div>
+                <p class="article-excerpt">
+                    React Hooks 的出现让函数组件变得更加强大。本文总结了在实际项目中使用 Hooks 的最佳实践，包括性能优化、自定义 Hooks 的设计原则，以及常见陷阱的避免方法...
+                </p>
+                <div class="tags">
+                    <span class="tag">React</span>
+                    <span class="tag">Hooks</span>
+                    <span class="tag">前端开发</span>
+                </div>
+            </article>
+
+            <article class="article-card">
+                <h2 class="article-title">Docker 容器化实践指南</h2>
+                <div class="article-meta">
+                    <span>发布于：2024-03-15</span>
+                    <span>阅读时长：20分钟</span>
+                </div>
+                <p class="article-excerpt">
+                    Docker 已经成为现代开发不可或缺的工具。本文介绍了 Docker 的核心概念，以及如何在实际项目中使用 Docker 进行容器化部署，包括最佳实践和性能优化建议...
+                </p>
+                <div class="tags">
+                    <span class="tag">Docker</span>
+                    <span class="tag">容器化</span>
+                    <span class="tag">DevOps</span>
+                </div>
+            </article>
+        </main>
+
+        <!-- 右侧边栏 -->
+        <aside class="sidebar">
+            <h3 class="sidebar-title">技术分类</h3>
+            <ul class="category-list">
+                <li class="category-item">
+                    <span class="category-name">前端开发</span>
+                    <span class="category-count">12</span>
+                </li>
+                <li class="category-item">
+                    <span class="category-name">后端开发</span>
+                    <span class="category-count">8</span>
+                </li>
+                <li class="category-item">
+                    <span class="category-name">移动开发</span>
+                    <span class="category-count">5</span>
+                </li>
+                <li class="category-item">
+                    <span class="category-name">DevOps</span>
+                    <span class="category-count">6</span>
+                </li>
+                <li class="category-item">
+                    <span class="category-name">数据库</span>
+                    <span class="category-count">4</span>
+                </li>
+                <li class="category-item">
+                    <span class="category-name">算法与数据结构</span>
+                    <span class="category-count">7</span>
+                </li>
+            </ul>
+        </aside>
+    </div>
+
+    <script>
+        // 搜索功能
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const articles = document.querySelectorAll('.article-card');
+            
+            articles.forEach(article => {
+                const title = article.querySelector('.article-title').textContent.toLowerCase();
+                const excerpt = article.querySelector('.article-excerpt').textContent.toLowerCase();
+                const tags = Array.from(article.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase());
+                
+                const isMatch = title.includes(searchTerm) || 
+                              excerpt.includes(searchTerm) || 
+                              tags.some(tag => tag.includes(searchTerm));
+                
+                article.style.display = isMatch ? 'block' : 'none';
+            });
+        });
+
+        // 分类点击效果
+        const categoryItems = document.querySelectorAll('.category-item');
+        categoryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const category = item.querySelector('.category-name').textContent.toLowerCase();
+                const articles = document.querySelectorAll('.article-card');
+                
+                articles.forEach(article => {
+                    const tags = Array.from(article.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase());
+                    article.style.display = tags.some(tag => tag.includes(category)) ? 'block' : 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

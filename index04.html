@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据看板 - 我的知识库</title>
+    <!-- 引入 ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #1a1c1e;
+            color: #fff;
+        }
+
+        header {
+            background-color: #2c3e50;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        nav {
+            background: rgb(44, 62, 80);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .nav-links a.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: #fff;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 70%;
+        }
+
+        .site-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .site-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .home-link {
+            padding: 0.5rem 1rem;
+            background-color: #34495e;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .data-card {
+            background: #2c3e50;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .data-card.large {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+
+        .large .chart-container {
+            height: 400px;
+        }
+
+        .data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .data-title {
+            font-size: 1.1rem;
+            color: #ecf0f1;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .data-card.large {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="nav-links">
+                    <a href="index.html">首页</a>
+                    <a href="index01.html">技术笔记</a>
+                    <a href="index02.html">学习心得</a>
+                    <a href="index03.html">扩展板块</a>
+                    <a href="index04.html" class="active">数据看板</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="dashboard-container">
+        <!-- 访问量趋势 -->
+        <div class="data-card large">
+            <div class="data-header">
+                <h3 class="data-title">访问量趋势</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="visitChart" class="chart-container"></div>
+        </div>
+
+        <!-- 用户分布 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">用户地域分布</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="userMapChart" class="chart-container"></div>
+        </div>
+
+        <!-- 文章分类占比 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">文章分类占比</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="categoryChart" class="chart-container"></div>
+        </div>
+        <!-- 热门文章排行 -->
+        <div class="data-card large">
+            <div class="data-header">
+                <h3 class="data-title">热门文章排行</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="articleRankChart" class="chart-container"></div>
+        </div>
+
+        <!-- 用户增长 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">用户增长趋势</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="userGrowthChart" class="chart-container"></div>
+        </div>
+
+        <!-- 互动数据 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">互动数据分析</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="interactionChart" class="chart-container"></div>
+        </div>
+
+        <!-- 设备访问占比 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">设备访问占比</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="deviceChart" class="chart-container"></div>
+        </div>
+
+        <!-- 访问时段分布 -->
+        <div class="data-card">
+            <div class="data-header">
+                <h3 class="data-title">访问时段分布</h3>
+                <button class="refresh-btn">⟳</button>
+            </div>
+            <div id="timeChart" class="chart-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initCharts() {
+            // 访问量趋势图
+            const visitChart = echarts.init(document.getElementById('visitChart'));
+            visitChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                series: [{
+                    name: '访问量',
+                    type: 'line',
+                    smooth: true,
+                    data: [820, 932, 901, 934, 1290, 1330, 1320],
+                    areaStyle: {
+                        opacity: 0.3
+                    },
+                    itemStyle: {
+                        color: '#3498db'
+                    }
+                }]
+            });
+
+            // 用户地域分布图（简化版中国地图）
+            const userMapChart = echarts.init(document.getElementById('userMapChart'));
+            userMapChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['30%', '50%'],
+                    data: [
+                        { value: 335, name: '华东' },
+                        { value: 310, name: '华北' },
+                        { value: 234, name: '华南' },
+                        { value: 135, name: '西部' },
+                        { value: 148, name: '其他' }
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            });
+
+            // 文章分类占比
+            const categoryChart = echarts.init(document.getElementById('categoryChart'));
+            categoryChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    right: 90,
+                    top: 'center',
+                    textStyle: {
+                        color: '#ecf0f1'
+                    }
+                },
+                series: [{
+                    name: '文章分类',
+                    type: 'pie',
+                    radius: ['60%', '80%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: '20',
+                            fontWeight: 'bold'
+                        }
+                    },
+                    data: [
+                        { value: 1048, name: '前端开发' },
+                        { value: 735, name: '后端开发' },
+                        { value: 580, name: '数据库' },
+                        { value: 484, name: 'DevOps' },
+                        { value: 300, name: '系统架构' }
+                    ]
+                }]
+            });
+
+            // 热门文章排行
+            const articleRankChart = echarts.init(document.getElementById('articleRankChart'));
+            articleRankChart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['文章1', '文章2', '文章3', '文章4', '文章5'],
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                series: [{
+                    name: '访问量',
+                    type: 'bar',
+                    data: [2999, 2500, 2000, 1800, 1500],
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                            { offset: 0, color: '#83bff6' },
+                            { offset: 0.5, color: '#188df0' },
+                            { offset: 1, color: '#188df0' }
+                        ])
+                    }
+                }]
+            });
+
+            // 用户增长趋势
+            const userGrowthChart = echarts.init(document.getElementById('userGrowthChart'));
+            userGrowthChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                series: [{
+                    data: [150, 230, 224, 218, 135, 147],
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: {
+                        opacity: 0.3
+                    },
+                    itemStyle: {
+                        color: '#27ae60'
+                    }
+                }]
+            });
+
+            // 互动数据分析
+            const interactionChart = echarts.init(document.getElementById('interactionChart'));
+            interactionChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                radar: {
+                    indicator: [
+                        { name: '评论', max: 100 },
+                        { name: '点赞', max: 100 },
+                        { name: '分享', max: 100 },
+                        { name: '收藏', max: 100 },
+                        { name: '转发', max: 100 }
+                    ],
+                    axisName: {
+                        color: '#ecf0f1'
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: [85, 90, 70, 95, 60],
+                        name: '互动指标'
+                    }],
+                    itemStyle: {
+                        color: '#9b59b6'
+                    }
+                }]
+            });
+
+            // 设备访问占比
+            const deviceChart = echarts.init(document.getElementById('deviceChart'));
+            deviceChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    bottom: '2%',
+                    left: 'center',
+                    textStyle: {
+                        color: '#ecf0f1',
+                    }
+                },
+                series: [{
+                    name: '访问设备',
+                    type: 'pie',
+                    radius: ['35%', '50%'],
+                    center: ['50%', '40%'],
+                    label: {  // [新增配置] 添加标签显示
+                        show: true,        // 显示标签
+                        position: 'outside', // 标签位置在外侧
+                        formatter: '{b}',   // 显示名称
+                        fontSize: 12,       // 文字大小
+                        color: '#ecf0f1',   // 文字颜色
+                        distanceToLabelLine: 5  // 文字与引导线之间的距离
+                    },
+                    labelLine: {  // [新增配置] 引导线配置
+                        show: true,
+                        length: 10,    // 第一段引导线长度
+                        length2: 10,   // 第二段引导线长度
+                        smooth: true   // 平滑的引导线
+                    },
+                    data: [
+                        { value: 1048, name: '移动端' },
+                        { value: 735, name: 'PC端' },
+                        { value: 580, name: '平板' },
+                        { value: 484, name: '其他' }
+                    ],
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }
+                }]
+            });
+
+            // 访问时段分布
+            const timeChart = echarts.init(document.getElementById('timeChart'));
+            timeChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+                    axisLabel: { 
+                        color: '#ecf0f1',
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#ecf0f1' }
+                },
+                series: [{
+                    data: [120, 50, 30, 180, 230, 290, 340, 200],
+                    type: 'bar',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#e74c3c' },
+                            { offset: 1, color: '#c0392b' }
+                        ])
+                    }
+                }]
+            });
+        }     // 其他图表初始化代码...
+            // 为了保持响应简洁，这里省略了其他图表的具体实现
+            // 实际使用时需要为每个图表容器初始化相应的图表
+
+            // 页面加载完成后初始化图表
+        document.addEventListener('DOMContentLoaded', initCharts);
+
+        // 窗口大小改变时重绘图表
+        window.addEventListener('resize', function() {
+            const charts = document.querySelectorAll('.chart-container');
+            charts.forEach(container => {
+                const chart = echarts.getInstanceByDom(container);
+                if (chart) {
+                    chart.resize();
+                }
+            });
+        });
+
+        // 为刷新按钮添加点击事件
+        document.querySelectorAll('.refresh-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 这里可以添加刷新数据的逻辑
+                this.style.transform = 'rotate(360deg)';
+                this.style.transition = 'transform 0.5s';
+                setTimeout(() => {
+                    this.style.transform = 'none';
+                    this.style.transition = 'none';
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
